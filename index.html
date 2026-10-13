@@ -215,6 +215,54 @@
 
         startButton.addEventListener("click", startGame);
 
+        // Replay button action
+
+        replayButton.addEventListener("click", () => {
+            clearInterval(gameInterval);
+            isStarted = true;
+            isPaused = false;
+            isGameOver = false;
+            gameSpeed = startingSpeed;
+            pauseButton.disabled = false;
+            pauseButton.textContent = "Pause";
+            pauseButton.setAttribute("aria-pressed", "false");
+            snake = [
+                { x: 10, y: 10 },
+                { x: 9, y: 10 },
+                { x: 8, y: 10 }
+            ];
+            direction = { x: 1, y: 0 };
+            food = { x: 15, y: 15 };
+            score = 0;
+            info.textContent = "";
+            gameOverTitle.textContent = "Game over!";
+            gameOverScreen.hidden = true;
+            drawGame();
+            startGameLoop();
+        });
+
+        // Resume button action
+
+        resumeButton.addEventListener("click", resumeGame);
+
+        // Pausebutton action
+
+        pauseButton.addEventListener("click", () => {
+            if (!isStarted || isGameOver) return;
+
+            isPaused = !isPaused;
+            pauseButton.textContent = isPaused ? "Resume" : "Pause";
+            pauseButton.setAttribute("aria-pressed", String(isPaused));
+
+            if (isPaused) {
+                clearInterval(gameInterval);
+                pauseScreen.hidden = false;
+            } else {
+                resumeGame();
+            }
+        });
+
+
 
          // Arrowkeys action
         
