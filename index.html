@@ -4,22 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
-    <style>
-        canvas {
-            border: 1px solid black;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <h1>Snake</h1>
     <div class="game-container">
-        <button id="startButton">Start</button>
-        <button id="pauseButton">Pause</button>
-        <button id="resumeButton">Resume</button>
-        <button id="replayButton">Replay</button>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <button id="pauseButton" type="button" aria-pressed="false" disabled>Pause</button>
+        <div id="startScreen" class="game-screen">
+            <h2>Snake</h2>
+            <button id="startButton" type="button">Start</button>
+        </div>
+        <div id="pauseScreen" class="game-screen" hidden>
+            <h2>Paused</h2>
+            <button id="resumeButton" type="button">Resume</button>
+        </div>
+        <div id="gameOverScreen" class="game-screen" hidden>
+            <h2 id="gameOverTitle">Game over</h2>
+            <p id="finalScore"></p>
+            <button id="replayButton" type="button">Replay</button>
+        </div>
     </div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
     <p id="info"></p>
 
     <script>
@@ -29,6 +35,7 @@
         const ctx = canvas.getContext("2d");
         const gridSize = 20;
         const tileCount = canvas.width / gridSize;
+        const info = document.getElementById("info");
 
    //Buttons
 
@@ -36,6 +43,24 @@
         const pauseButton = document.getElementById("pauseButton");
         const startButton = document.getElementById("startButton");
         const resumeButton = document.getElementById("resumeButton");
+
+
+    //Screens
+
+        const startScreen = document.getElementById("startScreen");
+        const pauseScreen = document.getElementById("pauseScreen");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+       
+        const gameOverTitle = document.getElementById("gameOverTitle");
+
+        const finalScore = document.getElementById("finalScore");
+
+
+    //Speed
+
+        const startingSpeed = 250;
+        const minimumSpeed = 80;
+        const speedIncrease = 15;
 
         
         // ===== INITIAL STATE =====
@@ -47,18 +72,29 @@
         let direction = { x: 1, y: 0 };
         let food = { x: 15, y: 15 };
         let score = 0;
+        let gameSpeed = startingSpeed;
+        let gameInterval;
+        let isStarted = false;
+        let isPaused = false;
+        let isGameOver = false;
 
         // ===== DRAWING =====
+
+        
         const drawGame = () => {
             ctx.clearRect(0, 0,
                 canvas.width, canvas.height);
 
+
+                //food
             ctx.fillStyle = "red";
             ctx.fillRect(
                 food.x * gridSize,
                 food.y * gridSize,
                 gridSize, gridSize
             );
+
+            //Snake
 
             ctx.fillStyle = "black";
             for (const segment of snake) {
@@ -70,9 +106,44 @@
             }
         };
 
+        const head = snake[0];
+        const centerX = head.x * gridSize + gridSize / 2;
+        const centerY = head.y * gridSize + gridSize / 2;
+        const forwardX = direction.x * 4;
+        const forwardY = direction.y * 4;
+        const sideX = -direction.y * 4.5;
+        const sideY = direction.x * 4.5;
+        ctx.fillStyle = "#4b2e1f";
+        ctx.fillRect(head.x * gridSize, head.y * gridSize, gridSize, gridSize);
+
+
         drawGame();
 
-         const moveSnake = () => {
+        //ending the game
+          const endGame = (message = "Game over") => {
+            isGameOver = true;
+            isPaused = false;
+            pauseButton.disabled = true;
+            pauseButton.textContent = "Pause";
+            pauseButton.setAttribute("aria-pressed", "false");
+            gameOverTitle.textContent = message;
+            finalScore.textContent = `Final score: ${score}`;
+            gameOverScreen.hidden = false;
+            clearInterval(gameInterval);
+        };
+
+        //Runs the loop
+
+        const startGameLoop = () => {
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, gameSpeed);
+        };
+
+       
+
+         // Moves the snake and checks if the snake eats or hit a wall or itself
+
+        const moveSnake = () => {
             const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
             const eatingFood = head.x === food.x && head.y === food.y;
 
@@ -106,13 +177,14 @@
             }
         };
 
+        
         // Game loop
 
         const gameLoop = () => {
             moveSnake();
             drawGame();
         };
-        
+
         // Startbutton action
 
         startButton.addEventListener("click", startGame);
