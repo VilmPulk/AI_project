@@ -177,6 +177,25 @@
             }
         };
 
+         // Checking that the food goes to an empty tile
+
+        const placeFood = () => {
+            const emptyTiles = [];
+            for (let row = 0; row < tileCount; row++) {
+                for (let column = 0; column < tileCount; column++) {
+                    if (!snake.some(segment => segment.x === column && segment.y === row)) {
+                        emptyTiles.push({ x: column, y: row });
+                    }
+                }
+            }
+
+            if (emptyTiles.length === 0) return false;
+
+            food = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+            return true;
+        };
+
+
         
         // Game loop
 
