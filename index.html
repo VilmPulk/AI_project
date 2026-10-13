@@ -139,6 +139,25 @@
             gameInterval = setInterval(gameLoop, gameSpeed);
         };
 
+         // Hiding the start screen and replay
+
+        const startGame = () => {
+            isStarted = true;
+            startScreen.hidden = true;
+            pauseButton.disabled = false;
+            startGameLoop();
+        };
+
+        // Hides the pause screen and then continue
+
+        const resumeGame = () => {
+            isPaused = false;
+            pauseScreen.hidden = true;
+            pauseButton.textContent = "Pause";
+            pauseButton.setAttribute("aria-pressed", "false");
+            startGameLoop();
+        };
+
        
 
          // Moves the snake and checks if the snake eats or hit a wall or itself
@@ -204,12 +223,8 @@
             drawGame();
         };
 
-        const startGame = () => {
-        isStarted = true;
-        startScreen.hidden = true;
-        pauseButton.disabled = false;
-        startGameLoop();
-};
+
+
 
         // Startbutton action
 
