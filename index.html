@@ -13,6 +13,12 @@
 <body>
 
     <h1>Snake</h1>
+    <div class="game-container">
+        <button id="startButton">Start</button>
+        <button id="pauseButton">Pause</button>
+        <button id="resumeButton">Resume</button>
+        <button id="replayButton">Replay</button>
+    </div>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <p id="info"></p>
 
@@ -24,6 +30,14 @@
         const gridSize = 20;
         const tileCount = canvas.width / gridSize;
 
+   //Buttons
+
+        const replayButton = document.getElementById("replayButton");
+        const pauseButton = document.getElementById("pauseButton");
+        const startButton = document.getElementById("startButton");
+        const resumeButton = document.getElementById("resumeButton");
+
+        
         // ===== INITIAL STATE =====
         let snake = [
             { x: 10, y: 10 },
@@ -58,57 +72,57 @@
 
         drawGame();
 
-       const updateGame = () => {
+         const moveSnake = () => {
             const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            const eatingFood = head.x === food.x && head.y === food.y;
 
-            // Check for collisions with walls
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                alert("Game Over! Your score: " + score);
-                resetGame();
+            if (
+                head.x < 0 || head.x >= tileCount ||
+                head.y < 0 || head.y >= tileCount
+            ) {
+                endGame();
                 return;
             }
 
-            // Check for collisions with self
-            for (const segment of snake) {
-                if (head.x === segment.x && head.y === segment.y) {
-                    alert("Game Over! Your score: " + score);
-                    resetGame();
-                    return;
-                }
+            const bodyToCheck = snake.slice(0, eatingFood ? snake.length : -1);
+            if (bodyToCheck.some(segment => segment.x === head.x && segment.y === head.y)) {
+                endGame();
+                return;
             }
 
             snake.unshift(head);
 
-            // Check for food collision
-            if (head.x === food.x && head.y === food.y) {
+            if (eatingFood) {
                 score++;
-                placeFood();
+                info.textContent = `Score: ${score}`;
+                gameSpeed = Math.max(minimumSpeed, gameSpeed - speedIncrease);
+                if (!placeFood()) {
+                    endGame("You win!");
+                    return;
+                }
+                startGameLoop();
             } else {
                 snake.pop();
             }
+        };
 
+        // Game loop
+
+        const gameLoop = () => {
+            moveSnake();
             drawGame();
         };
+        
+        // Startbutton action
 
-        const placeFood = () => {
-            food = {
-                x: Math.floor(Math.random() * tileCount),
-                y: Math.floor(Math.random() * tileCount)
-            };
-        };
+        startButton.addEventListener("click", startGame);
 
-        const resetGame = () => {
-            snake = [
-                { x: 10, y: 10 },
-                { x: 9, y: 10 },
-                { x: 8, y: 10 }
-            ];
-            direction = { x: 1, y: 0 };
-            score = 0;
-            placeFood();
-        };
 
+         // Arrowkeys action
+        
         document.addEventListener("keydown", (event) => {
+            if (!isStarted || isPaused || isGameOver) return;
+
             switch (event.key) {
                 case "ArrowUp":
                     if (direction.y === 0) direction = { x: 0, y: -1 };
@@ -124,10 +138,6 @@
                     break;
             }
         });
-
-        setInterval(updateGame, 100);
-
-        
 
     </script>
 
